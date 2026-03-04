@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FilmFind - Movie Search</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* [Previous CSS unchanged - just adding logo styles] */
+
+        .header {
+            padding: 32px 0 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        /* Custom SVG Logo */
+        .filmfind-logo {
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 36px;
+            font-weight: 300;
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.8px;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: #5f6368;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        /* Responsive logo */
+        @media (max-width: 768px) {
+            .filmfind-logo { width: 48px; height: 48px; }
+            .logo-text { font-size: 32px; }
+        }
+
+        /* [Rest of your existing CSS unchanged...]
+        #search-box, .movie-card, etc. */
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', -apple-system, sans-serif;
+            background: #fafbfc;
+            color: #202124;
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0 48px;
+        }
+
+        #search-box {
+            width: 582px;
+            height: 44px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 0 52px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            font-family: inherit;
+        }
+
+        #search-box:hover {
+            box-shadow: 0 1px 6px 0 rgba(32,33,36,0.28);
+            border-color: #dfe1e5;
+        }
+
+        #search-box:focus {
+            border-color: #4285f4;
+            box-shadow:
+                0 1px 6px 0 rgba(32,33,36,0.28),
+                0 0 0 3px rgba(66,133,244,0.12);
+        }
+
+        #movie-card {
+            max-width: 900px;
+            margin: 0 auto 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+            display: none;
+            overflow: hidden;
+        }
+
+        .movie-poster {
+            width: 158px;
+            height: 224px;
+            float: left;
+            background: #f1f3f4;
+            margin: 24px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .movie-content {
+            padding: 24px 32px 32px 0;
+            overflow: hidden;
+        }
+
+        .movie-title {
+            font-size: 28px;
+            font-weight: 400;
+            color: #202124;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .movie-meta {
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 20px;
+        }
+
+        .movie-year {
+            display: inline-block;
+            background: #f1f3f4;
+            color: #5f6368;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 12px;
+        }
+
+        .movie-rating {
+            color: #1e8e3e;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .movie-runtime {
+            color: #5f6368;
+            font-size: 14px;
+            margin-left: 16px;
+        }
+
+        .plot {
+            font-size: 16px;
+            color: #3c4043;
+            line-height: 1.6;
+            margin: 24px 0;
+            max-width: 600px;
+        }
+
+        .crew-container {
+            display: flex;
+            gap: 24px;
+            margin: 32px 0;
+        }
+
+        .crew-section {
+            min-width: 280px;
+        }
+
+        .crew-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #202124;
+            text-transform: uppercase;
+            letter-spacing: 0.25px;
+            margin-bottom: 12px;
+        }
+
+        .crew-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .crew-member {
+            background: #f1f3f4;
+            color: #3c4043;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .director { border-left: 3px solid #4285f4; padding-left: 9px; }
+        .producer { border-left: 3px solid #34a853; padding-left: 9px; }
+        .actor { border-left: 3px solid #fbbc04; padding-left: 9px; }
+
+        .imdb-link {
+            display: inline-block;
+            background: #1a73e8;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            margin-top: 16px;
+            transition: background 0.2s;
+        }
+
+        .imdb-link:hover {
+            background: #1557b0;
+        }
+
+        .ui-autocomplete {
+            border: 1px solid #dfe1e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: white;
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 4px;
+        }
+
+        .ui-menu-item {
+            padding: 12px 20px !important;
+            border-bottom: 1px solid #f1f3f4 !important;
+            font-size: 16px;
+            cursor: default;
+        }
+
+        .ui-menu-item:hover, .ui-state-active {
+            background: #f8f9fa !important;
+            color: #202124 !important;
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 32px; }
+            #search-box { width: calc(100vw - 80px); }
+            .movie-poster { float: none; width: 120px; height: 170px; margin: 0 auto 16px; display: block; }
+            .movie-content { padding: 20px; text-align: center; }
+            .crew-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- ✨ CUSTOM SVG LOGO -->
+            <div class="logo-container">
+                <svg class="filmfind-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Film reel background -->
+                    <circle cx="32" cy="32" r="28" fill="#1a73e8" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+                    <!-- Film holes -->
+                    <circle cx="12" cy="12" r="3" fill="#4285f4"/>
+                    <circle cx="52" cy="12" r="3" fill="#4285f4"/>
+                    <circle cx="12" cy="52" r="3" fill="#34a853"/>
+                    <circle cx="52" cy="52" r="3" fill="#34a853"/>
+
+                    <!-- Central reel -->
+                    <circle cx="32" cy="32" r="16" fill="#ffffff" stroke="#1a73e8" stroke-width="3"/>
+
+                    <!-- Play button triangle -->
+                    <polygon points="34,27 34,37 42,32" fill="#1a73e8"/>
+
+                    <!-- F inner cutout -->
+                    <path d="M22 22 L22 42 L26 42 L26 30 L30 30 L30 42 L34 42 L34 22 L30 22 L30 30 L26 30 L26 22 Z" fill="#4285f4"/>
+
+                    <!-- Shine effect -->
+                    <ellipse cx="32" cy="28" rx="12" ry="3" fill="rgba(255,255,255,0.4)"/>
+                </svg>
+                <span class="logo-text">FilmFind</span>
+            </div>
+            <div class="tagline">The fastest way to discover movies</div>
+        </div>
+
+        <div class="search-container">
+            <input id="search-box" type="text" placeholder="Search for any movie...">
+        </div>
+
+        <!-- [Rest of your movie-card HTML unchanged] -->
+        <div id="movie-card">
+            <div class="movie-poster" id="movie-poster"></div>
+            <div class="movie-content">
+                <h1 class="movie-title" id="movie-title">Movie Title</h1>
+                <div class="movie-meta">
+                    <span class="movie-year" id="movie-year">-</span>
+                    <span class="movie-rating" id="movie-rating">-</span>
+                    <span class="movie-runtime" id="movie-runtime">-</span>
+                </div>
+
+                <div class="plot" id="movie-plot">Movie plot summary will appear here...</div>
+
+                <div class="crew-container">
+                    <div class="crew-section">
+                        <div class="crew-title">Cast</div>
+                        <div class="crew-list" id="movie-cast"></div>
+                    </div>
+                    <div class="crew-section">
+                        <div class="crew-title">Crew</div>
+                        <div class="crew-list" id="movie-crew"></div>
+                    </div>
+                </div>
+
+                <a id="imdb-link" href="#" target="_blank" class="imdb-link">View on IMDb</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script>
+        // [Your existing JavaScript unchanged]
+        $(function() {
+            $("#search-box").autocomplete({
+                source: "/autocomplete/",
+                minLength: 2,
+                select: function(event, ui) {
+                    fetchMovie(ui.item.id);
+                    return false;
+                }
+            }).focus();
+        });
+
+        function fetchMovie(imdbId) {
+            fetch(`/movie/${imdbId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    $("#movie-title").text(data.title);
+                    $("#movie-year").text(data.year);
+                    $("#movie-rating").text(data.rating ? `${data.rating}/10` : 'N/A');
+                    $("#movie-runtime").text(data.runtime || '-');
+
+                    if(data.poster && data.poster !== 'N/A') {
+                        $("#movie-poster").html(`<img src="${data.poster}" alt="${data.title}">`);
+                    } else {
+                        $("#movie-poster").html('<div style="width:100%;height:100%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;font-size:48px;">🎬</div>');
+                    }
+
+                    $("#movie-plot").text(data.plot);
+
+                    const cast = Array.isArray(data.cast) ? data.cast.slice(0, 8) : [];
+                    $("#movie-cast").html(cast.map(name =>
+                        `<span class="crew-member actor">${name}</span>`
+                    ).join(''));
+
+                    const crew = [];
+                    if (Array.isArray(data.directors) && data.directors.length) {
+                        data.directors.slice(0, 4).forEach(name => crew.push(`<span class="crew-member director">${name}</span>`));
+                    }
+                    if (Array.isArray(data.producers) && data.producers.length) {
+                        data.producers.slice(0, 4).forEach(name => crew.push(`<span class="crew-member producer">${name}</span>`));
+                    }
+                    $("#movie-crew").html(crew.slice(0, 8).join(''));
+
+                    $("#imdb-link").attr('href', data.imdb_url);
+                    $("#movie-card").fadeIn(300);
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    alert("Failed to load movie details");
+                });
+        }
+    </script>
+</body>
+</html>
