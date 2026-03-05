@@ -3,7 +3,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/benabuariel/movie-info-simplified)](https://github.com/benabuariel/movie-info-simplified)
 [![GitHub issues](https://img.shields.io/github/issues/benabuariel/movie-info-simplified)](https://github.com/benabuariel/movie-info-simplified/issues)
-[![License](https://img.shields.io/github/license/benabuariel/movie-info-simplified)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 🎯 Purpose
 I built this project to prove I have practical experience with DevOps tools. It demonstrates containerization, CI/CD pipelines, cloud infrastructure, and GitOps workflows using industry-standard practices.
