@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Movie Search</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0; padding: 2rem; background: #f5f5f5;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 {
+            color: #333; text-align: center;
+            font-size: 2.5rem; margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            text-align: center; color: #666; margin-bottom: 3rem;
+        }
+        #search-box {
+            width: 100%; padding: 1rem; font-size: 1.2rem;
+            border: 2px solid #ddd; border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #movie-card {
+            margin-top: 2rem; background: white;
+            border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .movie-header {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .movie-poster {
+            width: 120px; height: 160px; background: #ddd;
+            border-radius: 8px; flex-shrink: 0; overflow: hidden;
+        }
+        .movie-title { font-size: 1.8rem; font-weight: 700; color: #222; }
+        .movie-meta { color: #666; font-size: 0.95rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .stat { text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: #007bff; }
+        .stat-label { color: #666; font-size: 0.9rem; margin-top: 0.25rem; }
+        .cast-list, .crew-list { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.9rem; color: #555; }
+        .cast-list span, .crew-list span { background: #e9ecef; padding: 0.25rem 0.5rem; border-radius: 12px; }
+        .plot { margin: 1.5rem 0; color: #444; line-height: 1.6; }
+        .ui-autocomplete {
+            max-height: 200px; overflow-y: auto; border: 1px solid #ddd;
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .ui-menu-item { padding: 0.75rem 1rem; border-bottom: 1px solid #eee; }
+        .ui-state-active { background: #007bff !important; color: white !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Movie Search</h1>
+        <p class="subtitle">Search 10M+ movies, get ratings, cast, directors & more</p>
+
+        <input id="search-box" type="text" placeholder="Type a movie title (e.g. Inception, Matrix)...">
+
+        <div id="movie-card">
+            <div class="movie-header">
+                <div class="movie-poster" id="movie-poster"></div>
+                <div>
+                    <div class="movie-title" id="movie-title"></div>
+                    <div class="movie-meta" id="movie-meta"></div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="movie-rating">-</div>
+                    <div class="stat-label">IMDb Rating</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="movie-runtime">-</div>
+                    <div class="stat-label">Runtime</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="movie-year">-</div>
+                    <div class="stat-label">Year</div>
+                </div>
+            </div>
+
+            <div class="plot" id="movie-plot"></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h3 style="margin: 0 0 1rem 0; color: #333;">Top Cast</h3>
+                    <div class="cast-list" id="movie-cast"></div>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 1rem 0; color: #333;">Directors & Producers</h3>
+                    <div class="crew-list" id="movie-crew"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <a id="imdb-link" href="#" target="_blank" style="color: #f5c518; font-weight: 600; text-decoration: none;">View on IMDb →</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script>
+        $(function() {
+            $("#search-box").autocomplete({
+                source: "/autocomplete/",
+                minLength: 2,
+                select: function(event, ui) {
+                    fetchMovie(ui.item.id);
+                }
+            });
+        });
+
+        function fetchMovie(imdbId) {
+            fetch(`/movie/${imdbId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    // Title and meta
+                    $("#movie-title").text(data.title);
+                    $("#movie-meta").text(`${data.genres?.join(', ') || 'N/A'}`);
+
+                    // Stats
+                    $("#movie-rating").text(data.rating || 'N/A');
+                    $("#movie-runtime").text(data.runtime || 'N/A');
+                    $("#movie-year").text(data.year || 'N/A');
+
+                    // Poster
+                    if(data.poster && data.poster !== 'N/A' && data.poster !== 'https://image.tmdb.org/t/p/w500/null') {
+                        $("#movie-poster").html(`<img src="${data.poster}" alt="Poster" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`);
+                    } else {
+                        $("#movie-poster").css('background', `linear-gradient(45deg, #667eea 0%, #764ba2 100%)`);
+                    }
+
+                    // Plot
+                    $("#movie-plot").text(data.plot || 'No plot available.');
+
+                    // Cast
+                    $("#movie-cast").html((data.cast || []).slice(0, 8).map(name => `<span>${name}</span>`).join(''));
+
+                    // Crew (directors + producers)
+                    $("#movie-crew").html([
+                        ...(data.directors || []).map(name => `<span>🎬 ${name}</span>`),
+                        ...(data.producers || []).map(name => `<span>📽️ ${name}</span>`)
+                    ].slice(0, 8).join(''));
+
+                    // IMDb link
+                    $("#imdb-link").attr('href', data.imdb_url).text(`View on IMDb →`);
+
+                    // Show card
+                    $("#movie-card").fadeIn(300);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error loading movie details");
+                });
+        }
+    </script>
+</body>
+</html>
