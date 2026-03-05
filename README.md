@@ -14,7 +14,6 @@
 
 </div>
 
-
 ## 🎯 Purpose
 I built this project to prove I have practical experience with DevOps tools. It demonstrates containerization, CI/CD pipelines, cloud infrastructure, and GitOps workflows using industry-standard practices.
 
