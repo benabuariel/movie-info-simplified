@@ -1,9 +1,15 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 from decouple import config
+import dj_database_url
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
+print(f"DEBUG: DATABASE_URL={os.getenv('DATABASE_URL')}")
 
+DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 OMDB_API_KEY = config('OMDB_API_KEY', default='')
@@ -49,6 +55,10 @@ TEMPLATES = [
     },
 ]
 
+DATABASES = {
+    'default': dj_database_url.parse(DATABASE_URL)
+}
+
 WSGI_APPLICATION = 'movie_info_demo.wsgi.application'
 
 # Internationalization
@@ -60,3 +70,9 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/staticfiles/'
+
+# Database - Smart SQLite vs Postgres (ALL environments)
+default_db = config('DATABASE_URL', default='sqlite:///db.sqlite3', cast=dj_database_url.parse)
+DATABASES = {
+    'default': default_db
+}

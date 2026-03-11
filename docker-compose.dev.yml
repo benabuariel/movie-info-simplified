@@ -3,13 +3,24 @@ services:
     build:
       context: .
       target: dev
-    environment:
-      - DJANGO_SETTINGS_MODULE=movie_info_demo.settings.local  # <- Add this line
-      - DEBUG=true
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
-    depends_on:
-      - db
-      - redis
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=sqlite:///app/db.sqlite3
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=django-insecure-local-only-do-not-use-in-production
+      - DEBUG=1
+      - OMDb_API_KEY=1bac746e
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

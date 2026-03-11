@@ -1,13 +1,10 @@
 from .base import *
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+# Local development - SQLite only
+os.environ['DATABASE_URL'] = 'sqlite:///db.sqlite3'
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'movie_db',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'db',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.parse('sqlite:///db.sqlite3')
 }
+
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '127.0.0.1:8000']
